@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from routers.customers import router as customers_router
+from routers.sellers import router as sellers_router
 from routers.authentificate import router as authentificate_router
 
 test_router = APIRouter()
@@ -7,6 +8,8 @@ test_router = APIRouter()
 app = FastAPI()
 
 app.include_router(customers_router)
+
+app.include_router(sellers_router)
 
 app.include_router(authentificate_router)
 

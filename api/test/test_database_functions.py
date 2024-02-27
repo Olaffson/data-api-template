@@ -1,8 +1,9 @@
 from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker, Session
-from database.core import Base, DBCustomers
+from database.core import Base, DBCustomers, DBSellers
 from typing import Generator
 from database.customers import CustomerCreate, create_db_customer, generate_id
+from database.sellers import SellerCreate, create_db_seller
 from database.authentificate import UserCreate, create_db_user
 import pytest
 from passlib.context import CryptContext
@@ -28,6 +29,16 @@ def session() -> Generator[Session, None, None]:
     db_session.add(db_customer)
     db_session.commit()
 
+    #create test sellers
+    db_seller = DBSellers(
+        seller_id=generate_id(),
+        seller_zip_code_prefix="75000",
+        seller_city="Paris",
+        seller_state="IDF"
+    )
+    db_session.add(db_seller)
+    db_session.commit()
+
     yield db_session
 
     db_session.close()
@@ -48,6 +59,21 @@ def test_create_customers(session:Session) -> None:
     assert customer.customer_zip_code_prefix == "14409"
     assert customer.customer_city=="franca"
     assert customer.customer_state=="SP"
+
+
+def test_create_sellers(session: Session) -> None:
+    seller = create_db_seller(
+        SellerCreate(
+            seller_zip_code_prefix="75000",
+            seller_city="Paris",
+            seller_state="IDF"
+        ),
+        session
+    )
+    assert len(seller.seller_id) == 14
+    assert seller.seller_zip_code_prefix == "75000"
+    assert seller.seller_city == "Paris"
+    assert seller.seller_state == "IDF"
 
 
 def test_create_user(session:Session) -> None: 

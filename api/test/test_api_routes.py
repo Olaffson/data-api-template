@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker, Session
-from database.core import Base, get_db, DBCustomers
+from database.core import Base, get_db, DBCustomers, DBSellers
 from database.authentificate import create_db_user, UserCreate
 from database.customers import generate_id
 from main import app
@@ -30,6 +30,16 @@ def session() -> Generator[Session, None, None]:
             customer_state="HDF")
     
     db_session.add(db_customer)
+    db_session.commit()
+
+    #create test sellers
+    db_seller = DBSellers(
+        seller_id=generate_id(),
+        seller_zip_code_prefix="75000",
+        seller_city="Paris",
+        seller_state="IDF"
+    )
+    db_session.add(db_seller)
     db_session.commit()
 
     #create test user
@@ -72,6 +82,8 @@ def test_read_root(session:Session):
     assert response.status_code == 200
     assert response.json() == 'Server is running.'
 
+#### test customers
+
 def test_create_customer_unauthorize(session:Session):
     response = client.post("/customers/",json={
             "customer_unique_id":"861eff4711a542e4b93843c6dd7febb0",
@@ -96,6 +108,29 @@ def test_create_customer(session:Session, valid_token):
             "customer_state":"SP"
             }, headers={"Authorization": f"Bearer {'mocked_token'}"})
     assert response.status_code == 200, response.text
+
+#### Test sellers
+
+def test_create_seller(session: Session, valid_token):
+    response = client.post("/sellers/", json={
+        "seller_zip_code_prefix": "75001",
+        "seller_city": "Paris",
+        "seller_state": "IDF"
+    }, headers={"Authorization": f"Bearer {'mocked_token'}"})
+    assert response.status_code == 200, response.text
+    
+
+# def test_get_seller(session: Session):
+#     # Vous devrez récupérer un seller_id d'un vendeur existant pour ce test
+#     seller_id = "id_du_vendeur_existante"
+#     response = client.get(f"/sellers/{seller_id}")
+#     assert response.status_code == 200
+#     # Assurez-vous que la réponse contient les données du vendeur demandé
+#     data = response.json()
+#     assert data['seller_id'] == seller_id
+#     # etc. pour les champs restants
+
+# Continuez avec des tests pour mettre à jour et supprimer des vendeurs
 
 ####  Authentification
 

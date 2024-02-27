@@ -24,6 +24,14 @@ class DBCustomers(Base):
     customer_state: Mapped[str]
 
 
+class DBSellers(Base):
+    __tablename__ = "sellers"
+
+    seller_id: Mapped[str] = mapped_column(primary_key=True, index=True)
+    seller_zip_code_prefix: Mapped[str]
+    seller_city: Mapped[str]
+    seller_state: Mapped[str]
+
 
 class DBUsers(Base):
 
